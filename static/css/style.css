@@ -1,0 +1,201 @@
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--bs-body-bg);
+}
+
+.fixed-top {
+  height: 3.5rem;
+}
+
+.container-fluid {
+  padding: 0;
+  margin: 0;
+}
+
+.news-feed {
+  padding-top: 4rem;
+  overflow-y: visible;
+  padding: 1rem;
+  padding-bottom: 90px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s, background 0.3s;
+  border: none;
+  animation: fadeInUp 0.4s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.card-body p {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.media-thumb {
+  max-height: 120px;
+  height: auto;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  object-fit: cover;
+}
+
+.video-thumb {
+  max-height: 120px;
+  min-width: 120px;
+  margin: 0.25rem 0.5rem 0.25rem 0;
+  border: 2px solid #0d6efd;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+}
+
+.video-thumb::after {
+  content: "▶";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  color: white;
+  text-shadow: 0 0 8px black;
+  pointer-events: none;
+}
+
+.audio-thumb {
+  display: inline-block;
+  width: 320px;
+  height: 40px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background-color 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+.audio-thumb:hover {
+  background-color: #dee2e6;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.news-date,
+.card-body small.text-muted {
+  display: block;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #6c757d;
+  margin-top: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+[data-bs-theme="light"] .card {
+  background-color: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .card {
+  background-color: #23272b;
+  border-color: #444;
+}
+
+.card:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+}
+
+@media (max-width: 768px) {
+  .news-feed {
+    padding: 0.5rem;
+    padding-bottom: 100px;
+  }
+  .card-body {
+    padding: 1rem 0.7rem;
+  }
+  .media-thumb,
+  .video-thumb {
+    max-height: 80px;
+    min-width: 80px;
+  }
+  .audio-thumb {
+    width: 320px;
+  }
+}
+
+/* Базовий розмір тексту для десктопів */
+.card-text {
+  font-size: 1.2rem;
+}
+
+/* Збільшений текст на мобільних пристроях */
+@media (max-width: 768px) {
+  .card-text {
+    font-size: 1.5rem;
+  }
+
+  .card-text small {
+    font-size: 1rem;
+  }
+}
+
+nav.pagination-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1030;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0;
+  overflow-x: auto;
+}
+
+[data-bs-theme="dark"] nav.pagination-nav {
+  background: rgba(34, 34, 34, 0.95);
+}
+
+.offcanvas {
+  position: fixed !important;
+  z-index: 1060 !important;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Забезпечуємо, що offcanvas завжди буде поверх інших елементів */
+.offcanvas-backdrop {
+  z-index: 1059 !important;
+}

@@ -1,0 +1,45 @@
+.channel-nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1070;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.channel-nav-btn:hover {
+  background: #0b5ed7;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.channel-nav-btn.left-btn {
+  left: 10px;
+}
+
+.channel-nav-btn.right-btn {
+  right: 10px;
+}
+
+/* Анімація переходу між каналами */
+.news-feed.fade-out {
+  animation: fadeOut 0.25s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}

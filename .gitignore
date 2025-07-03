@@ -1,0 +1,12 @@
+env/
+media/
+__pycache__/
+logs/
+config.json
+*.db
+clean_db.sh
+run_fetcher.sh
+run.sh
+tg.session
+*.bck
+tg.session-journal
