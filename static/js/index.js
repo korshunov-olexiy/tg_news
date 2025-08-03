@@ -50,32 +50,10 @@ async function deleteMedia(event, channel, messageId, filename, btn) {
   }
 }
 
-function setTheme(theme) {
-  if (theme === "dark") {
-    document.documentElement.setAttribute("data-bs-theme", "dark");
-    localStorage.setItem("theme", "dark");
-    document.getElementById("theme-toggle").textContent = "☀️";
-  } else {
-    document.documentElement.setAttribute("data-bs-theme", "light");
-    localStorage.setItem("theme", "light");
-    document.getElementById("theme-toggle").textContent = "🌙";
-  }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("mediaModal");
   const modalVideo = document.getElementById("modalVideo");
   const modalImage = document.getElementById("modalImage");
-
-  const savedTheme = localStorage.getItem("theme") || "light";
-  setTheme(savedTheme);
-
-  const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-bs-theme");
-    const newTheme = current === "light" ? "dark" : "light";
-    setTheme(newTheme);
-  });
 
   document.body.addEventListener("click", (e) => {
     const videoThumb = e.target.closest(".video-thumb");

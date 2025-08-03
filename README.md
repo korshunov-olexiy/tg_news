@@ -84,17 +84,36 @@ uvicorn app:app --reload --host <ip_address> --port 8000
 uvicorn app:app --host <ip_address> --port 8000
 ```
 
+### Налаштування системної служби Linux
+Якщо у вас Ubuntu, то створіть файл /etc/systemd/system/tg_news.service, в якому пропишіть наступний код (підкорегуйте шляхи до проекту та environment):
+```bash
+[Unit]
+Description=Telegram News FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/tg_news
+ExecStart=/root/tg_news/env/bin/python main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Використання
 
 Після запуску програми відкрийте веб-браузер і перейдіть за адресою `http://<ip_address>:8000`. Ви побачите стрічку новин з налаштованих каналів.
 
-- У боковому меню, зверху вниз відображаються - курси валют, графік з динамікою курсів валют та назви каналів
+- У боковому меню, зверху вниз відображаються - кнопки "Очистити" (очистити всі канали від новин) та "Налаштування" (перехід на сторінку налаштувань), курси валют, графік з динамікою курсів валют та назви каналів
 - Медіа-файли, розмір яких менший за `MAX_FILE_SIZE_MB`, відображаються автоматично у вигляді preview
 - Для великих файлів відображається кнопка завантаження
 - Після завантаження великого файлу з'являється preview та кнопка для його видалення
 
 ## Структура проекту
-
+- `main.py` - для запуску проекту через службу systemd
 - `app.py` - Основний файл додатку з FastAPI маршрутами
 - `config.json` - Конфігураційний файл
 - `news.db` - SQLite база даних з новинами

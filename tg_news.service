@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram News FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/tg_news
+ExecStart=/root/tg_news/env/bin/python main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

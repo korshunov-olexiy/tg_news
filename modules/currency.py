@@ -41,7 +41,6 @@ class CurrencyRates:
             sell_block = cols[2].find("div", recursive=True)
             buy = safe_float(buy_block.contents[0]) if buy_block and buy_block.contents else None
             sell = safe_float(sell_block.contents[0]) if sell_block and sell_block.contents else None
-            print(currency, buy, sell)
             if currency == "USD":
                 result["usd"] = {"buy": buy, "sell": sell}
             elif currency == "EUR":

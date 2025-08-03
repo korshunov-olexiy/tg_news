@@ -1,11 +1,13 @@
 import json
 import os
 import sqlite3
+from asyncio import create_task, sleep
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
+                     Request)
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -13,18 +15,20 @@ from telethon import TelegramClient
 from telethon.errors import MessageIdInvalidError
 from telethon.tl.types import MessageMediaDocument, MessageMediaPhoto
 
+from modules.admin import clean_all, restart_program, update_config
 from modules.currency import CurrencyRates
 from modules.debuger import Debugger
 from modules.exchange import ExchangeRatesDB
 from modules.formatter import NewsProcessor
 
+CONFIG_FILE = "config.json"
 DB_PATH = "news.db"
 MEDIA_FOLDER = "media"
 SESSION_FILE = "tg.session"
 
 os.makedirs(MEDIA_FOLDER, exist_ok=True)
 
-with open("config.json", "r") as f:
+with open(CONFIG_FILE, "r") as f:
     config = json.load(f)
 
 API_ID = config["api_id"]
@@ -72,6 +76,14 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+def get_non_empty_channels():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT channel, COUNT(*) as cnt FROM news GROUP BY channel")
+    result = cursor.fetchall()
+    conn.close()
+    return {row[0]: row[1] for row in result}
 
 def cleanup_old_news():
     now = datetime.now(timezone.utc)
@@ -138,12 +150,7 @@ def get_news(channel=None, date_from=None, date_to=None, query_text=None, offset
     count_query = f"SELECT COUNT(*) FROM news {where_clause}"
     cursor.execute(count_query, tuple(params))
     total = cursor.fetchone()[0]
-    query = f"""
-        SELECT text, media_files, created_at FROM news
-        {where_clause}
-        ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
-    """
+    query = f"""SELECT text, media_files, created_at FROM news {where_clause} ORDER BY created_at DESC LIMIT ? OFFSET ?"""
     params.extend([limit, offset])
     cursor.execute(query, tuple(params))
     news = cursor.fetchall()
@@ -194,8 +201,6 @@ async def lifespan(app: FastAPI):
     await client.start()
     init_db()
 
-    from asyncio import create_task, sleep
-
     async def background_tasks():
         last_cleanup_time = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         while True:
@@ -218,6 +223,8 @@ app.router.lifespan_context = lifespan
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, channel: str = Query(None), date_from: str = Query(None), date_to: str = Query(None), search: str = Query(None), page: int = Query(1)):
+    news_counts = get_non_empty_channels()
+    channel_list = [(ch, CHANNELS[ch], news_counts[ch]) for ch in CHANNELS if ch in news_counts]
     current_channel = channel or (list(CHANNELS.keys())[0] if CHANNELS else None)
     offset = (page - 1) * ITEMS_PER_PAGE
     news, total = get_news(current_channel, date_from, date_to, search, offset, ITEMS_PER_PAGE)
@@ -225,7 +232,7 @@ async def index(request: Request, channel: str = Query(None), date_from: str = Q
     return templates.TemplateResponse("index.html", {
         "request": request,
         "channel_map": CHANNELS,
-        "channel_list": list(CHANNELS.items()),
+        "channel_list": channel_list,
         "channels": list(CHANNELS.keys()),
         "selected_channel": current_channel,
         "news": news,
@@ -235,6 +242,10 @@ async def index(request: Request, channel: str = Query(None), date_from: str = Q
         "date_from": date_from or "",
         "date_to": date_to or "",
     })
+
+@app.get("/settings", response_class=HTMLResponse)
+async def settings(request: Request):
+    return templates.TemplateResponse("settings.html", {"request": request})
 
 @app.get("/api/rates")
 async def get_rates():
@@ -253,6 +264,40 @@ class DownloadMediaRequest(BaseModel):
 
 class DeleteMediaRequest(BaseModel):
     filename: str
+
+@app.post("/admin/restart")
+def restart():
+    restart_program()
+    return {"status": "restarted"}
+
+@app.post("/admin/cleanup")
+def cleanup():
+    clean_all()
+    return {"status": "cleaned"}
+
+@app.get("/admin/config")
+def get_config():
+    with open(CONFIG_FILE, "r") as f:
+        return json.load(f)
+
+@app.post("/admin/config")
+def set_config(data: dict):
+    updated = update_config(data)
+    return updated
+
+@app.get("/api/config")
+def get_config():
+    return json.load(config)
+
+@app.post("/api/config")
+def save_config(new_config: dict = Body(...)):
+    config_path = CONFIG_FILE
+    with open(config_path, "r", encoding="utf-8") as f:
+        current_config = json.load(f)
+    current_config.update(new_config)
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(current_config, f, indent=2, ensure_ascii=False)
+    return JSONResponse(content={"status": "updated"})
 
 @app.post("/api/download-media")
 async def download_media_api(data: DownloadMediaRequest):
